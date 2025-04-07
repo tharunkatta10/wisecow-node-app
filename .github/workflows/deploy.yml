@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main  # Adjust if your default branch is named differently
+      - main  # Adjust if your default branch is different
 
 jobs:
   deploy:
@@ -11,31 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-      - name: Set up SSH Key
-        run: |
-          mkdir -p ~/.ssh/
-          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+    - name: Set up SSH key
+      run: |
+        echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > private_key.pem
+        chmod 600 private_key.pem
 
-      - name: Deploy Application
-        run: |
-          ssh ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
-            # Navigate to the application directory or clone the repository
-            cd /path/to/your/application || git clone https://github.com/your-username/your-repo.git /path/to/your/application
-            cd /path/to/your/application
-
-            # Pull the latest changes
-            git pull origin main
-
-            # Install dependencies (adjust based on your application's stack)
-            npm install  # For Node.js applications
-            # pip install -r requirements.txt  # For Python applications
-
-            # Restart the application (adjust based on your deployment strategy)
-            pm2 restart all  # If using PM2 for process management
-            # systemctl restart your-app.service  # If using systemd
-          EOF
+    - name: Deploy Application
+      run: |
+        ssh -o StrictHostKeyChecking=no -i private_key.pem ${{ secrets.EC2_USERNAME }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd wisecow-node-app || git clone https://github.com/tharunkatta10/wisecow-node-app.git
+          cd wisecow-node-app
+          git pull origin main
+          npm install
+          pm2 restart app || pm2 start index.js --name app
+        EOF
