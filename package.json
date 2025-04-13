@@ -1,0 +1,15 @@
+{
+  "name": "wisecow-node-app",
+  "version": "1.0.0",
+  "description": "A Node.js app to demonstrate CI/CD using Docker and GitHub Actions.",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Tharun Katta",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
+
